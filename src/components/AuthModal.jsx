@@ -234,14 +234,14 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           <div className="p-8 pt-10">
             <div className="text-center mb-6">
               <h2 className="text-3xl font-bold mb-2">
-                {view === 'login' && 'Bon retour !'}
-                {view === 'signup' && 'Créer un compte'}
-                {view === 'forgot' && 'Mot de passe oublié ?'}
+                {view === 'login' && <span>Bon retour !</span>}
+                {view === 'signup' && <span>Créer un compte</span>}
+                {view === 'forgot' && <span>Mot de passe oublié ?</span>}
               </h2>
               <p className="text-muted-foreground">
-                {view === 'login' && 'Connectez-vous pour gérer vos annonces'}
-                {view === 'signup' && 'Rejoignez la communauté AFRMARKET'}
-                {view === 'forgot' && 'Entrez votre email pour réinitialiser'}
+                {view === 'login' && <span>Connectez-vous pour gérer vos annonces</span>}
+                {view === 'signup' && <span>Rejoignez la communauté AFRMARKET</span>}
+                {view === 'forgot' && <span>Entrez votre email pour réinitialiser</span>}
               </p>
             </div>
 
@@ -378,7 +378,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
                   )}
 
                   <Button type="submit" className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 text-white py-6 rounded-xl text-lg font-semibold shadow-lg" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : (view === 'login' ? 'Se connecter' : "S'inscrire")}
+                    {loading ? <Loader2 className="animate-spin" /> : <span>{view === 'login' ? 'Se connecter' : "S'inscrire"}</span>}
                   </Button>
                 </form>
 
@@ -399,9 +399,9 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground pt-2">
-                  {view === 'login' ? "Pas encore de compte ?" : "Déjà un compte ?"}
+                  <span>{view === 'login' ? "Pas encore de compte ?" : "Déjà un compte ?"}</span>
                   <button type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="ml-1 text-orange-500 font-semibold hover:underline">
-                    {view === 'login' ? "S'inscrire gratuitement" : "Se connecter"}
+                    <span>{view === 'login' ? "S'inscrire gratuitement" : "Se connecter"}</span>
                   </button>
                 </p>
               </div>

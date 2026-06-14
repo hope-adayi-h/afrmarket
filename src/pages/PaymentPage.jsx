@@ -41,7 +41,7 @@ export default function PaymentPage() {
         throw new Error("Authentification invalide ou session expirée. Veuillez vous reconnecter.");
       }
 
-      const endpoint = "https://fcllwzixxgishrdrfcee.supabase.co/functions/v1/process-payment";
+      const endpoint = import.meta.env.VITE_PAYMENT_FUNCTION_URL;
       const payload = {
         amount: Number(amount),
         user_id: user.id,

@@ -3,7 +3,7 @@ import { ArrowLeft, Edit, Trash2, MapPin, Clock, MessageSquare, Bell, Heart, Cam
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 const ProfilePage = ({ user, onBack, onListingClick, onMessageClick, onUserUpdate, onEditListing, onVerifyIdentity }) => {
   const [userListings, setUserListings] = useState([]);

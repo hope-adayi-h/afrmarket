@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const Header = ({ currentUser, onLoginClick, onLogout, onCreateListing, onNavigate }) => {

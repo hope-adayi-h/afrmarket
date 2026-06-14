@@ -3,7 +3,7 @@ import { UploadCloud, FileType, CheckCircle, AlertCircle, Loader2 } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function KYCUpload({ user, onUploadSuccess }) {
   const { toast } = useToast();

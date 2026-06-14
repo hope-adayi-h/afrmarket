@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { Helmet } from 'react-helmet';
 import { Loader2, Filter, Search, Frown } from 'lucide-react';
 import { categories } from '@/data/categories';

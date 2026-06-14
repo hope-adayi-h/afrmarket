@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 import { Bell, Loader2, Trash2, UserPlus, FilePlus, CheckCircle, XCircle, FileMinus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';

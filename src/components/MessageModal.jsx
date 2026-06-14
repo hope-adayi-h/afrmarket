@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';

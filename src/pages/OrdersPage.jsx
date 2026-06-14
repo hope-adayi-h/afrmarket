@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { Helmet } from 'react-helmet';
 import { Package, MapPin, Clock, CheckCircle, ArrowRight, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

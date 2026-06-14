@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { Helmet } from 'react-helmet';
 import { MapPin, Eye, Share2, MessageCircle, ChevronLeft, ChevronRight, Heart, ShieldCheck, Calendar, Trash2, User, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';

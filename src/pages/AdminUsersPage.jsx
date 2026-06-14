@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useSearchParams } from 'react-router-dom';
 import { Users, Search, Shield, Loader2, Trash2, Phone, MapPin, FileText, Calendar as CalendarIcon, Package, Check, X, Eye, UserX, UserCheck, ChevronDown, Star, Tag, Award, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

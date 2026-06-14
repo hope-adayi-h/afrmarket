@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { Helmet } from 'react-helmet';
 import { Loader2 } from 'lucide-react';
 import FeaturedListings from '@/components/FeaturedListings';

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Heart, Star, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 const AllListingsPage = ({ onListingClick, currentUser, onLikeToggle, onBack }) => {
   const [listings, setListings] = useState([]);

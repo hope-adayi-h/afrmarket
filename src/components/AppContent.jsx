@@ -208,8 +208,19 @@ function AppContent() {
       setIsAuthModalOpen(true);
       toast({ title: "Connexion requise", description: "Vous devez être connecté pour publier une annonce." });
     } else if (!subscription) {
-       toast({ title: "Abonnement requis", description: "Vous devez avoir un abonnement actif pour publier.", variant: "destructive" });
-       navigate('/abonnements');
+      toast({ 
+        title: "Abonnement requis pour publier", 
+        description: "Choisissez un plan pour commencer à publier vos annonces.", 
+        variant: "destructive",
+        action: (
+          <button 
+            onClick={() => navigate('/abonnements')} 
+            className="ml-2 px-3 py-1 bg-primary text-primary-foreground rounded text-xs font-semibold hover:bg-primary/90 shrink-0"
+          >
+            Voir les plans
+          </button>
+        )
+      });
     } else {
       const verified = await isVerified(user.id);
       if (!verified) {

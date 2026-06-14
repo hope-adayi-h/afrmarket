@@ -179,11 +179,11 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
         if (result.error) throw result.error;
 
         toast({ 
-            title: 'Inscription réussie !', 
-            description: 'Veuillez choisir un abonnement pour activer votre compte.'
+            title: 'Inscription réussie ! 🎉', 
+            description: 'Bienvenue sur AFRMARKET ! Votre compte est prêt.'
         });
         onClose();
-        navigate('/abonnements'); // Redirect to subscriptions after signup
+        navigate('/'); // Redirect to home after signup
 
     } catch (error) {
         toast({ title: "Erreur d'inscription", description: error.message, variant: 'destructive' });

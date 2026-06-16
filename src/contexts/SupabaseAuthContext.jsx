@@ -18,12 +18,12 @@ export const AuthProvider = ({ children }) => {
   const refreshProfile = useCallback(async (userId) => {
     const id = userId || user?.id;
     if (id) {
-       const { data: profileData, error } = await supabase
+      const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
-      
+
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
       } else {
@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
         .order('end_date', { ascending: false })
         .limit(1)
         .maybeSingle();
-      
+
       if (error && error.code !== 'PGRST116') throw error;
-      
+
       setSubscription(data);
     } catch (error) {
       console.error('Error fetching subscription:', error);
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       setProfile(null);
       setSubscription(null);
     }
-    
+
     setLoading(false);
   }, [refreshProfile, fetchSubscription]);
 
@@ -121,12 +121,12 @@ export const AuthProvider = ({ children }) => {
         description: error.message || "Email/téléphone ou mot de passe incorrect.",
       });
     }
-     return { data, error };
+    return { data, error };
   }, [toast]);
-  
+
   const verifyOtp = useCallback(async (options) => {
     const { data, error } = await supabase.auth.verifyOtp(options);
-     if (error) {
+    if (error) {
       toast({
         variant: "destructive",
         title: "Erreur de vérification",
@@ -171,20 +171,21 @@ export const AuthProvider = ({ children }) => {
     fetchSubscription
   }), [user, session, profile, subscription, loading, loadingSubscription, signUp, signIn, signOut, verifyOtp, refreshProfile, fetchSubscription]);
 
- return (
-  <AuthContext.Provider value={value}>
-    {loading ? (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">Chargement...</p>
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-muted-foreground text-sm">Chargement...</p>
+          </div>
         </div>
-      </div>
-    ) : (
-      children
-    )}
-  </AuthContext.Provider>
-);
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

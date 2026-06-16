@@ -171,8 +171,20 @@ export const AuthProvider = ({ children }) => {
     fetchSubscription
   }), [user, session, profile, subscription, loading, loadingSubscription, signUp, signIn, signOut, verifyOtp, refreshProfile, fetchSubscription]);
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
-};
+ return (
+  <AuthContext.Provider value={value}>
+    {loading ? (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Chargement...</p>
+        </div>
+      </div>
+    ) : (
+      children
+    )}
+  </AuthContext.Provider>
+);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

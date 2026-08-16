@@ -4,7 +4,7 @@ export const getVerificationStatus = async (userId) => {
   if (!userId) return null;
   try {
     const { data, error } = await supabase
-      .from('account_verification')
+      .from('kyc')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();

@@ -81,21 +81,22 @@ const PaymentModal = ({ isOpen, onClose, plan, user }) => {
         user_id: user.id,
       });
 
+const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
       const res = await fetch(
-  "https://vnvhahkfqlnodbnbtjam.supabase.co/functions/v1/process-payment",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZudmhhaGtmcWxub2RibmJ0amFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NTgxODYsImV4cCI6MjA5MjUzNDE4Nn0.5BplOK5gSqDQTpsIHsEukVyVr7z42Thjo-jhN47-VIM",
-      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZudmhhaGtmcWxub2RibmJ0amFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NTgxODYsImV4cCI6MjA5MjUzNDE4Nn0.5BplOK5gSqDQTpsIHsEukVyVr7z42Thjo-jhN47-VIM",
-    },
-    body: JSON.stringify({
-      amount: finalAmount,
-      user_id: user.id,
-    }),
-  }
-);
+        import.meta.env.VITE_PAYMENT_FUNCTION_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: finalAmount,
+          }),
+        }
+      );
 
 const data = await res.json();
 console.log("RESPONSE:", data);

@@ -148,7 +148,7 @@ function AppContent() {
   
   const handleLoginSuccess = () => {
     setIsAuthModalOpen(false);
-    toast({ title: "Connexion réussie ! 👋", description: `Bon retour !` });
+    toast({ title: "Connexion réussie ! ", description: `Bon retour !` });
     refreshProfile();
   };
 
@@ -173,7 +173,7 @@ function AppContent() {
         toast({ title: "Retiré des favoris", description: "L'annonce a été retirée de vos favoris temporaires." });
       } else {
         newGuestLikes = [...guestLikes, listingId];
-        toast({ title: "Ajouté aux favoris ❤️", description: "Annonce sauvegardée temporairement sur cet appareil." });
+        toast({ title: "Ajouté aux favoris ", description: "Annonce sauvegardée temporairement sur cet appareil." });
       }
       setGuestLikes(newGuestLikes);
       localStorage.setItem('afrmarket_guest_likes', JSON.stringify(newGuestLikes));
@@ -197,7 +197,7 @@ function AppContent() {
       await refreshProfile();
       setForceUpdateKey(c => c + 1);
       toast({
-        title: isLiked ? "Retiré des favoris" : "Ajouté aux favoris ❤️",
+        title: isLiked ? "Retiré des favoris" : "Ajouté aux favoris ",
         description: isLiked ? "L'annonce a été retirée de votre liste." : "Retrouvez cette annonce dans vos favoris.",
       });
     }
@@ -222,13 +222,8 @@ function AppContent() {
         )
       });
     } else {
-      const verified = await isVerified(user.id);
-      if (!verified) {
-        setIsVerificationModalOpen(true);
-      } else {
-        setListingToEdit(null);
-        setIsCreateListingOpen(true);
-      }
+      setListingToEdit(null);
+      setIsCreateListingOpen(true);
     }
   };
 

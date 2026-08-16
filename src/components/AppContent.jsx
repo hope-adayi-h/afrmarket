@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet';
 import { Routes, Route, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
@@ -11,47 +11,47 @@ import ContactAdminModal from '@/components/ContactAdminModal';
 import BackButton from '@/components/BackButton';
 import VerificationCheckModal from '@/components/VerificationCheckModal';
 
-import HomePage from '@/pages/HomePage';
-import ProfilePage from '@/pages/ProfilePage';
-import SearchResultsPage from '@/pages/SearchResultsPage';
-import AllListingsPage from '@/pages/AllListingsPage';
-import ListingDetailPage from '@/pages/ListingDetailPage';
-import MessagesPage from '@/pages/MessagesPage';
-import OrdersPage from '@/pages/OrdersPage';
-import BlogPage from '@/pages/BlogPage';
-import BlogPostPage from '@/pages/BlogPostPage';
-import AboutPage from '@/pages/AboutPage';
-import ContactPage from '@/pages/ContactPage';
-import FAQPage from '@/pages/FAQPage';
-import UpdatePasswordPage from '@/pages/UpdatePasswordPage';
-import NotFoundPage from '@/pages/NotFoundPage';
-import FavoritesPage from '@/pages/FavoritesPage';
-import ConditionsPage from '@/pages/ConditionsPage';
-import ConfidentialitePage from '@/pages/ConfidentialitePage';
-import SellerProfilePage from '@/pages/SellerProfilePage';
-import SignupVideoPage from '@/pages/SignupVideoPage';
-import SubscriptionsPage from '@/pages/SubscriptionsPage';
-import InfluencerDashboardPage from '@/pages/InfluencerDashboardPage';
-import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
-import PaymentPage from '@/pages/PaymentPage';
+const HomePage = lazy(() => import('@/pages/HomePage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const SearchResultsPage = lazy(() => import('@/pages/SearchResultsPage'));
+const AllListingsPage = lazy(() => import('@/pages/AllListingsPage'));
+const ListingDetailPage = lazy(() => import('@/pages/ListingDetailPage'));
+const MessagesPage = lazy(() => import('@/pages/MessagesPage'));
+const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
+const BlogPage = lazy(() => import('@/pages/BlogPage'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
+const AboutPage = lazy(() => import('@/pages/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
+const FAQPage = lazy(() => import('@/pages/FAQPage'));
+const UpdatePasswordPage = lazy(() => import('@/pages/UpdatePasswordPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'));
+const ConditionsPage = lazy(() => import('@/pages/ConditionsPage'));
+const ConfidentialitePage = lazy(() => import('@/pages/ConfidentialitePage'));
+const SellerProfilePage = lazy(() => import('@/pages/SellerProfilePage'));
+const SignupVideoPage = lazy(() => import('@/pages/SignupVideoPage'));
+const SubscriptionsPage = lazy(() => import('@/pages/SubscriptionsPage'));
+const InfluencerDashboardPage = lazy(() => import('@/pages/InfluencerDashboardPage'));
+const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
+const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
 
-// Admin Imports
-import AdminLayout from '@/layouts/AdminLayout';
-import AdminDashboardPage from '@/pages/AdminDashboardPage';
-import AdminListingsPage from '@/pages/AdminListingsPage';
-import AdminUsersPage from '@/pages/AdminUsersPage';
-import AdminMessagesPage from '@/pages/AdminMessagesPage';
-import AdminNotificationsPage from '@/pages/AdminNotificationsPage';
-import AdminStatsPage from '@/pages/AdminStatsPage';
-import AdminAuditLogPage from '@/pages/AdminAuditLogPage';
-import AdminCustomizationPage from '@/pages/AdminCustomizationPage';
-import AdminPaymentProvidersPage from '@/pages/AdminPaymentProvidersPage';
-import AdminPromoCodesPage from '@/pages/AdminPromoCodesPage';
-import AdminPaymentsPage from '@/pages/AdminPaymentsPage';
-import AdminCommissionsPage from '@/pages/AdminCommissionsPage';
-import AdminUserSubscriptionsPage from '@/pages/AdminUserSubscriptionsPage';
-import AdminSubscriptionPlansPage from '@/pages/AdminSubscriptionPlansPage';
-import AdminVerificationPage from '@/pages/AdminVerificationPage';
+// Admin Imports (chargés uniquement quand un admin visite /administrateur/*)
+const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
+const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
+const AdminListingsPage = lazy(() => import('@/pages/AdminListingsPage'));
+const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage'));
+const AdminMessagesPage = lazy(() => import('@/pages/AdminMessagesPage'));
+const AdminNotificationsPage = lazy(() => import('@/pages/AdminNotificationsPage'));
+const AdminStatsPage = lazy(() => import('@/pages/AdminStatsPage'));
+const AdminAuditLogPage = lazy(() => import('@/pages/AdminAuditLogPage'));
+const AdminCustomizationPage = lazy(() => import('@/pages/AdminCustomizationPage'));
+const AdminPaymentProvidersPage = lazy(() => import('@/pages/AdminPaymentProvidersPage'));
+const AdminPromoCodesPage = lazy(() => import('@/pages/AdminPromoCodesPage'));
+const AdminPaymentsPage = lazy(() => import('@/pages/AdminPaymentsPage'));
+const AdminCommissionsPage = lazy(() => import('@/pages/AdminCommissionsPage'));
+const AdminUserSubscriptionsPage = lazy(() => import('@/pages/AdminUserSubscriptionsPage'));
+const AdminSubscriptionPlansPage = lazy(() => import('@/pages/AdminSubscriptionPlansPage'));
+const AdminVerificationPage = lazy(() => import('@/pages/AdminVerificationPage'));
 
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -95,7 +95,7 @@ function AppContent() {
         .on('postgres_changes', { 
           event: 'UPDATE', 
           schema: 'public', 
-          table: 'account_verification',
+          table: 'kyc',
           filter: `user_id=eq.${user.id}`
         }, (payload) => {
           if (payload.new.status === 'approved') {
@@ -148,7 +148,7 @@ function AppContent() {
   
   const handleLoginSuccess = () => {
     setIsAuthModalOpen(false);
-    toast({ title: "Connexion réussie ! ", description: `Bon retour !` });
+    toast({ title: "Connexion réussie ! 👋", description: `Bon retour !` });
     refreshProfile();
   };
 
@@ -173,7 +173,7 @@ function AppContent() {
         toast({ title: "Retiré des favoris", description: "L'annonce a été retirée de vos favoris temporaires." });
       } else {
         newGuestLikes = [...guestLikes, listingId];
-        toast({ title: "Ajouté aux favoris ", description: "Annonce sauvegardée temporairement sur cet appareil." });
+        toast({ title: "Ajouté aux favoris ❤️", description: "Annonce sauvegardée temporairement sur cet appareil." });
       }
       setGuestLikes(newGuestLikes);
       localStorage.setItem('afrmarket_guest_likes', JSON.stringify(newGuestLikes));
@@ -197,7 +197,7 @@ function AppContent() {
       await refreshProfile();
       setForceUpdateKey(c => c + 1);
       toast({
-        title: isLiked ? "Retiré des favoris" : "Ajouté aux favoris ",
+        title: isLiked ? "Retiré des favoris" : "Ajouté aux favoris ❤️",
         description: isLiked ? "L'annonce a été retirée de votre liste." : "Retrouvez cette annonce dans vos favoris.",
       });
     }
@@ -268,6 +268,11 @@ function AppContent() {
         {showBackButton && <BackButton />}
 
         <main className="flex-grow">
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          }>
           <Routes>
             <Route path="/administrateur" element={profile?.role === 'admin' ? <AdminLayout><AdminDashboardPage /></AdminLayout> : <NotFoundPage />} />
             <Route path="/administrateur/annonces" element={profile?.role === 'admin' ? <AdminLayout><AdminListingsPage /></AdminLayout> : <NotFoundPage />} />
@@ -322,6 +327,7 @@ function AppContent() {
             
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
         </main>
         
         {!isAdminRoute && !isPaymentRoute && <Footer onNavigate={handleNavigate} />}

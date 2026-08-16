@@ -92,8 +92,9 @@ const { data: sessionData } = await supabase.auth.getSession();
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
+         body: JSON.stringify({
             amount: finalAmount,
+            plan_id: plan.id,
           }),
         }
       );

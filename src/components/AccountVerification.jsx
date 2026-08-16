@@ -60,20 +60,20 @@ export default function AccountVerification({ user }) {
       if (uploadError) throw uploadError;
 
       const { data: existing } = await supabase
-        .from('account_verification')
+        .from('kyc')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (existing) {
         const { error } = await supabase
-          .from('account_verification')
+          .from('kyc')
           .update({ document_url: fileName, status: 'pending', updated_at: new Date().toISOString() })
           .eq('id', existing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('account_verification')
+          .from('kyc')
           .insert({ user_id: user.id, document_url: fileName, status: 'pending' });
         if (error) throw error;
       }
@@ -92,19 +92,19 @@ export default function AccountVerification({ user }) {
   const handleSkip = async () => {
     try {
       const { data: existing } = await supabase
-        .from('account_verification')
+        .from('kyc')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (existing) {
         await supabase
-          .from('account_verification')
+          .from('kyc')
           .update({ verification_skipped: true })
           .eq('id', existing.id);
       } else {
         await supabase
-          .from('account_verification')
+          .from('kyc')
           .insert({ user_id: user.id, status: 'unverified', verification_skipped: true });
       }
       toast({ title: "Vérification reportée", description: "Vous pourrez vérifier votre compte plus tard." });

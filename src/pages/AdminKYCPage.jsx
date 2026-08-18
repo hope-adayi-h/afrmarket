@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Eye, Check, X, Search } from 'lucide-react';
+import { Loader2, Eye, Check, X, Search, FileText } from 'lucide-react';
 
 export default function AdminKYCPage() {
   const { toast } = useToast();
@@ -20,6 +20,12 @@ export default function AdminKYCPage() {
   const [actionType, setActionType] = useState(null); // 'approved' or 'rejected'
   const [adminNotes, setAdminNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Viewing Modal state
+  const [viewingRequest, setViewingRequest] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [signedUrls, setSignedUrls] = useState({ selfie: null, front: null, back: null });
+  const [loadingUrls, setLoadingUrls] = useState(false);
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -70,6 +76,7 @@ export default function AdminKYCPage() {
         description: "Le statut a été mis à jour avec succès." 
       });
       setIsActionModalOpen(false);
+      setIsViewModalOpen(false);
       fetchRequests();
     } catch (error) {
       toast({ title: "Erreur", description: "Impossible de mettre à jour le statut.", variant: "destructive" });
@@ -79,15 +86,33 @@ export default function AdminKYCPage() {
   };
 
   const getSignedUrl = async (path) => {
+    if (!path) return null;
     try {
       const { data, error } = await supabase.storage
         .from('kyc-documents')
-        .createSignedUrl(path, 60);
+        .createSignedUrl(path, 3600); // 1 hour valid
       if (error) throw error;
-      window.open(data.signedUrl, '_blank');
+      return data.signedUrl;
     } catch (error) {
-      toast({ title: "Erreur", description: "Impossible d'ouvrir le document.", variant: "destructive" });
+      console.error("Error generating signed url:", error);
+      return null;
     }
+  };
+
+  const handleViewClick = async (req) => {
+    setViewingRequest(req);
+    setIsViewModalOpen(true);
+    setLoadingUrls(true);
+    setSignedUrls({ selfie: null, front: null, back: null });
+
+    const [selfie, front, back] = await Promise.all([
+      getSignedUrl(req.selfie_url),
+      getSignedUrl(req.id_front_url),
+      getSignedUrl(req.id_back_url)
+    ]);
+
+    setSignedUrls({ selfie, front, back });
+    setLoadingUrls(false);
   };
 
   const filteredRequests = requests.filter(req => {
@@ -103,6 +128,14 @@ export default function AdminKYCPage() {
       case 'rejected': return <Badge variant="destructive">Rejeté</Badge>;
       default: return <Badge variant="secondary">En attente</Badge>;
     }
+  };
+
+  const getDocTypeLabel = (req) => {
+    if (!req) return '';
+    if (req.document_type === 'cni') return 'Carte Nationale';
+    if (req.document_type === 'passeport') return 'Passeport';
+    if (req.document_type === 'autre') return req.document_type_label || 'Autre';
+    return 'Document';
   };
 
   return (
@@ -147,8 +180,9 @@ export default function AdminKYCPage() {
                 <TableRow>
                   <TableHead>Utilisateur</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Document</TableHead>
+                  <TableHead>Détails</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -160,10 +194,16 @@ export default function AdminKYCPage() {
                       <div className="text-xs text-muted-foreground">{req.profiles?.email}</div>
                     </TableCell>
                     <TableCell>{new Date(req.created_at).toLocaleDateString('fr-FR')}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        {getDocTypeLabel(req)}
+                      </div>
+                    </TableCell>
                     <TableCell>{getStatusBadge(req.status)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => getSignedUrl(req.document_url)}>
-                        <Eye className="h-4 w-4 mr-2" /> Voir
+                      <Button variant="ghost" size="sm" onClick={() => handleViewClick(req)}>
+                        <Eye className="h-4 w-4 mr-2" /> Examiner
                       </Button>
                     </TableCell>
                     <TableCell className="text-right">
@@ -186,6 +226,7 @@ export default function AdminKYCPage() {
         )}
       </div>
 
+      {/* Action Modal */}
       <Dialog open={isActionModalOpen} onOpenChange={setIsActionModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -194,8 +235,8 @@ export default function AdminKYCPage() {
             </DialogTitle>
             <DialogDescription>
               {actionType === 'approved' 
-                ? 'L\'utilisateur sera autorisé à effectuer des paiements.' 
-                : 'Veuillez préciser la raison du rejet (optionnel).'}
+                ? 'L\'utilisateur sera autorisé à effectuer des paiements et sera marqué comme vérifié.' 
+                : 'Veuillez préciser la raison du rejet (qui sera visible par l\'utilisateur).'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -205,6 +246,7 @@ export default function AdminKYCPage() {
                 value={adminNotes} 
                 onChange={(e) => setAdminNotes(e.target.value)} 
                 placeholder={actionType === 'rejected' ? 'Ex: Document flou, pièce expirée...' : 'Notes internes...'}
+                required={actionType === 'rejected'}
               />
             </div>
           </div>
@@ -213,11 +255,97 @@ export default function AdminKYCPage() {
             <Button 
               variant={actionType === 'approved' ? 'default' : 'destructive'} 
               onClick={submitAction}
-              disabled={actionLoading}
+              disabled={actionLoading || (actionType === 'rejected' && !adminNotes.trim())}
             >
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirmer
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Détails de la vérification</DialogTitle>
+            <DialogDescription>
+              Utilisateur : {viewingRequest?.profiles?.full_name} ({viewingRequest?.profiles?.email})
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-6">
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-sm">Type de document :</span>
+              <Badge variant="outline">{getDocTypeLabel(viewingRequest)}</Badge>
+              <span className="font-semibold text-sm ml-4">Statut :</span>
+              {viewingRequest && getStatusBadge(viewingRequest.status)}
+            </div>
+
+            {viewingRequest?.admin_notes && (
+              <div className="bg-muted p-3 rounded-md text-sm border">
+                <strong>Notes admin :</strong> {viewingRequest.admin_notes}
+              </div>
+            )}
+
+            {loadingUrls ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground text-sm">Chargement sécurisé des documents...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Selfie</h4>
+                  {signedUrls.selfie ? (
+                    <a href={signedUrls.selfie} target="_blank" rel="noreferrer" className="block cursor-zoom-in">
+                      <img src={signedUrls.selfie} alt="Selfie" className="w-full h-64 object-cover rounded-lg border shadow-sm hover:opacity-90 transition-opacity" />
+                    </a>
+                  ) : (
+                    <div className="h-64 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground text-sm border border-dashed">Non fourni (ancien format)</div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Recto {viewingRequest?.document_type === 'passeport' ? '(Passeport)' : ''}</h4>
+                  {signedUrls.front ? (
+                    <a href={signedUrls.front} target="_blank" rel="noreferrer" className="block cursor-zoom-in">
+                      <img src={signedUrls.front} alt="Recto" className="w-full h-64 object-cover rounded-lg border shadow-sm hover:opacity-90 transition-opacity" />
+                    </a>
+                  ) : (
+                    <div className="h-64 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground text-sm border border-dashed">Non fourni</div>
+                  )}
+                </div>
+
+                {viewingRequest?.document_type !== 'passeport' && (
+                  <div className="space-y-2 md:col-span-2 md:w-1/2 md:mx-auto">
+                    <h4 className="font-medium text-sm">Verso</h4>
+                    {signedUrls.back ? (
+                      <a href={signedUrls.back} target="_blank" rel="noreferrer" className="block cursor-zoom-in">
+                        <img src={signedUrls.back} alt="Verso" className="w-full h-64 object-cover rounded-lg border shadow-sm hover:opacity-90 transition-opacity" />
+                      </a>
+                    ) : (
+                      <div className="h-64 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground text-sm border border-dashed">Non requis ou non fourni</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex justify-between sm:justify-between border-t pt-4">
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Fermer</Button>
+            
+            {viewingRequest?.status === 'pending' && (
+              <div className="flex gap-2">
+                <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleActionClick(viewingRequest, 'rejected')}>
+                  <X className="mr-2 h-4 w-4" /> Rejeter
+                </Button>
+                <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleActionClick(viewingRequest, 'approved')}>
+                  <Check className="mr-2 h-4 w-4" /> Approuver
+                </Button>
+              </div>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

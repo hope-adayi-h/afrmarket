@@ -166,7 +166,7 @@ const ProfilePage = ({ onListingClick, onEditListing, onContactAdmin }) => {
               <div className="flex-1 text-center md:text-left">
                 <h1 className="text-2xl md:text-3xl font-bold flex items-center justify-center md:justify-start gap-2">
                   {profile.full_name}
-                  {profile.kyc_status === 'verified' && <Verified className="h-6 w-6 text-blue-500" title="Identité vérifiée" />}
+                  {profile.kyc_status === 'verified' && <Verified className="h-6 w-6 text-green-500" title="Identité vérifiée" />}
                 </h1>
                 <p className="text-muted-foreground mt-1">{profile.location || 'Lieu non spécifié'}</p>
               </div>

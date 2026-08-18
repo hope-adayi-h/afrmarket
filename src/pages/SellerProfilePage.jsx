@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Helmet } from 'react-helmet';
-import { MapPin, Calendar, Star, ShoppingBag, MessageCircle, ShieldCheck } from 'lucide-react';
+import { MapPin, Calendar, Star, ShoppingBag, MessageCircle, Verified } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import StarRating from '@/components/StarRating';
@@ -90,7 +90,7 @@ const SellerProfilePage = ({ currentUser, onLikeToggle, onListingClick, likedLis
               <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6">
                 <div className="relative shrink-0">
                   <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-card shadow-xl"><AvatarImage src={profile.avatar_url} alt={profile.full_name} className="object-cover" /><AvatarFallback className="text-4xl bg-muted">{profile.full_name?.charAt(0)}</AvatarFallback></Avatar>
-                  {profile.kyc_status === 'verified' && <div className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-background rounded-full p-1 shadow-md" title="Vendeur Vérifié"><ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-green-500 fill-green-50/20" /></div>}
+                  {profile.kyc_status === 'verified' && <div className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-background rounded-full p-1 shadow-md" title="Vendeur Vérifié"><Verified className="w-6 h-6 md:w-8 md:h-8 text-green-500 fill-green-50/20" /></div>}
                 </div>
                 <div className="flex-1 text-center md:text-left space-y-2 w-full">
                   <h1 className="text-2xl md:text-4xl font-bold truncate px-2 md:px-0">{profile.full_name}</h1>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { supabase } from '@/lib/supabaseClient';
-import { Check, Crown, Loader2, ArrowRight, Star } from 'lucide-react';
+import { Check, Crown, Loader2, ArrowRight, Star, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -14,9 +14,13 @@ const SubscriptionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  
-  const { user } = useAuth();
+
+  const { user, subscription } = useAuth();
   const navigate = useNavigate();
+
+  const daysRemaining = subscription?.end_date
+    ? Math.max(0, Math.ceil((new Date(subscription.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   useEffect(() => {
     fetchPlans();
@@ -55,6 +59,8 @@ const SubscriptionsPage = () => {
     if (!user) {
       // If not logged in, redirect to login modal via query param
       navigate('/?action=login'); 
+    } else if (subscription) {
+      return; // sécurité : le bouton est déjà désactivé dans ce cas
     } else {
       setSelectedPlan(plan);
       setIsPaymentModalOpen(true);
@@ -98,6 +104,22 @@ const SubscriptionsPage = () => {
               Choisissez le plan adapté à vos besoins pour maximiser votre visibilité et accélérer vos transactions.
             </p>
           </div>
+
+          {subscription && (
+            <div className="max-w-2xl mx-auto mb-10 flex items-center gap-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
+              <div className="rounded-full bg-primary/10 p-2.5 text-primary shrink-0">
+                <CalendarClock className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold">Vous êtes déjà abonné au plan {subscription.plan_name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {daysRemaining > 0
+                    ? `Votre abonnement expire dans ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} (le ${new Date(subscription.end_date).toLocaleDateString('fr-FR')}).`
+                    : "Votre abonnement expire aujourd'hui."}
+                </p>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div className="flex justify-center py-20">
@@ -153,11 +175,12 @@ const SubscriptionsPage = () => {
                         <CardFooter className="pt-8">
                            <Button 
                              onClick={() => handleSubscribe(plan)} 
+                             disabled={!!subscription}
                              className={`w-full h-12 text-base ${isPopular ? 'bg-primary hover:bg-primary/90' : ''}`} 
                              variant={isPopular ? 'default' : 'outline'}
                            >
-                             {user ? "Choisir ce plan" : "S'inscrire pour choisir"}
-                             <ArrowRight className="ml-2 h-4 w-4" />
+                             {!user ? "S'inscrire pour choisir" : subscription ? "Déjà abonné" : "Choisir ce plan"}
+                             {!subscription && <ArrowRight className="ml-2 h-4 w-4" />}
                            </Button>
                         </CardFooter>
                      </Card>

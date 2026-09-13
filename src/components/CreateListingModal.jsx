@@ -171,13 +171,36 @@ const CreateListingModal = ({ isOpen, onClose, currentUser, listingToEdit }) => 
       }
   }
 
+  const compressImage = (file, maxWidth = 1600, quality = 0.75) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file),
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const uploadImagesToSupabase = async () => {
     const uploadedUrls = [];
     for (const img of images) {
       if (img.file) {
-        const fileExt = img.file.name.split('.').pop();
-        const fileName = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('listings').upload(fileName, img.file);
+        const compressedFile = await compressImage(img.file);
+        const fileName = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+        const { error: uploadError } = await supabase.storage.from('listings').upload(fileName, compressedFile);
         if (uploadError) throw new Error(`Erreur upload ${img.file.name}`);
         const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(fileName);
         uploadedUrls.push(publicUrl);

@@ -134,6 +134,23 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const getSession = async () => {
       try {
+        // Retour de Google : la clé de connexion arrive dans l'adresse (#access_token=...).
+        // On l'enregistre nous-mêmes si Supabase ne l'a pas fait, puis on nettoie l'adresse.
+        const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        if (accessToken && refreshToken) {
+          const { data: existing } = await supabase.auth.getSession();
+          if (!existing?.session) {
+            const { error: setErr } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (setErr) console.error('Error setting session from URL:', setErr);
+          }
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         await handleSession(currentSession);
       } catch (err) {

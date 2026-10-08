@@ -240,7 +240,13 @@ function AppContent() {
     navigate(`/listing/${listing.id}`);
   };
 
-  const currentUserForHeader = user && profile ? { ...user, ...profile } : null;
+  // Une personne connectée est affichée comme connectée même si son profil
+  // n'est pas encore chargé (ex. premier passage avec Google).
+  const fallbackProfile = user && !profile ? {
+    full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+    avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+  } : {};
+  const currentUserForHeader = user ? { ...user, ...fallbackProfile, ...(profile || {}) } : null;
   const currentUserForProps = user && profile ? { ...user, ...profile } : null;
   const likedListingIds = user ? (profile?.likes || []) : guestLikes;
   const isAdminRoute = location.pathname.startsWith('/administrateur');

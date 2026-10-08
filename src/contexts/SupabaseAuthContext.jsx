@@ -15,22 +15,47 @@ export const AuthProvider = ({ children }) => {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
 
 
-  const refreshProfile = useCallback(async (userId) => {
+  // Crée le profil s'il n'existe pas encore (cas des comptes Google :
+  // la personne n'est pas passée par le formulaire d'inscription).
+  const ensureProfile = useCallback(async (authUser) => {
+    const meta = authUser?.user_metadata || {};
+    const newProfile = {
+      id: authUser.id,
+      full_name: meta.full_name || meta.name || (authUser.email ? authUser.email.split('@')[0] : null),
+      avatar_url: meta.avatar_url || meta.picture || null,
+    };
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(newProfile, { onConflict: 'id', ignoreDuplicates: true })
+      .select('*')
+      .maybeSingle();
+    if (error) {
+      console.error('Error creating profile:', error);
+      return null;
+    }
+    if (data) return data;
+    const { data: existing } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
+    return existing;
+  }, []);
+
+  const refreshProfile = useCallback(async (userId, authUser) => {
     const id = userId || user?.id;
     if (id) {
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching profile:', error);
+      } else if (!profileData && authUser) {
+        setProfile(await ensureProfile(authUser));
       } else {
         setProfile(profileData);
       }
     }
-  }, [user?.id]);
+  }, [user?.id, ensureProfile]);
 
   const fetchSubscription = useCallback(async (userId) => {
     const id = userId || user?.id;
@@ -67,35 +92,55 @@ export const AuthProvider = ({ children }) => {
     const currentUser = currentSession?.user ?? null;
     setUser(currentUser);
 
-    if (currentUser) {
-      await Promise.all([
-        refreshProfile(currentUser.id),
-        fetchSubscription(currentUser.id)
-      ]);
-    } else {
-      setProfile(null);
-      setSubscription(null);
+    try {
+      if (currentUser) {
+        await Promise.all([
+          refreshProfile(currentUser.id, currentUser),
+          fetchSubscription(currentUser.id)
+        ]);
+      } else {
+        setProfile(null);
+        setSubscription(null);
+      }
+    } catch (err) {
+      console.error('Error loading session data:', err);
+    } finally {
+      // Toujours arrêter le chargement, même en cas d'erreur.
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [refreshProfile, fetchSubscription]);
 
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      await handleSession(currentSession);
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        await handleSession(currentSession);
+      } catch (err) {
+        console.error('Error getting session:', err);
+        setLoading(false);
+      }
     };
 
     getSession();
 
+    // Important : ne pas appeler Supabase directement (await) dans ce callback.
+    // Au retour de Google, Supabase est encore en train d'enregistrer la session ;
+    // attendre une autre requête Supabase ici bloque tout (chargement infini).
+    // On laisse donc le callback se terminer, puis on traite la session juste après.
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        await handleSession(newSession);
+      (_event, newSession) => {
+        setTimeout(() => { handleSession(newSession); }, 0);
       }
     );
 
-    return () => authSubscription.unsubscribe();
+    // Filet de sécurité : jamais plus de 10 s d'écran de chargement.
+    const safety = setTimeout(() => setLoading(false), 10000);
+
+    return () => {
+      clearTimeout(safety);
+      authSubscription.unsubscribe();
+    };
   }, [handleSession]);
 
   const signUp = useCallback(async (options) => {

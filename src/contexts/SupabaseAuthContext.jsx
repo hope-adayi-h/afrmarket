@@ -111,6 +111,26 @@ export const AuthProvider = ({ children }) => {
   }, [refreshProfile, fetchSubscription]);
 
 
+  // Si Supabase/Google renvoie une erreur dans l'adresse (#error=... ou ?error=...),
+  // on l'affiche au lieu d'échouer en silence.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(
+        (window.location.hash || '').replace(/^#/, '') + '&' + (window.location.search || '').replace(/^\?/, '')
+      );
+      const errDesc = params.get('error_description') || params.get('error');
+      if (errDesc) {
+        console.error('OAuth error:', params.get('error'), errDesc);
+        toast({
+          variant: 'destructive',
+          title: 'Connexion Google échouée',
+          description: decodeURIComponent(errDesc.replace(/\+/g, ' ')),
+          duration: 15000,
+        });
+      }
+    } catch (_) { /* ignore */ }
+  }, [toast]);
+
   useEffect(() => {
     const getSession = async () => {
       try {
